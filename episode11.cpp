@@ -213,7 +213,7 @@ int main(void)
 	/* Create shader */
 	ShaderProgramSource source = ParseShader("Basic.shader");
 	uint shader = CreateShader(source.VertexSource, source.FragmentSource);
-    GLCall(glUseProgram(shader));
+    glUseProgram(shader);
 
     GLCall(int location = glGetUniformLocation(shader, "u_Color"));
     ASSERT(location != -1);

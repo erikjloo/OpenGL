@@ -8,6 +8,7 @@
  * Episode 9: Index Buffers (Node indices) to define elements
  * Episode 10: How to debug
  * Episode 11: Uniforms set per draw / attributes set per vertex
+ * Episode 12: Vertex Arrays
  * 
  * Rendering Pipeline:
  * 1) Create buffer to contain vertex info
@@ -15,7 +16,6 @@
  * 3) Use vertex shader to determine vertex positions in window
  * 4) Use fragment (pixel) shaders to paint (triangle) pixels
  *
- * uint are whole/natural numbers (without sign)
  * Heap -> global variables (fragmented)
  * Stack -> local variables (continuous)
  * 
@@ -35,26 +35,7 @@
 #include <string>
 #include <sstream> // string stream
 
-#define ASSERT(x) if (!(x)) __builtin_trap();
-#define GLCall(x) GLClearError();\
-    x;\
-    ASSERT(GLLogCall(#x, __FILE__, __LINE__));\
-
-static void GLClearError()
-{
-    while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLLogCall(const char* function, const char* file, int line)
-{
-    while (GLenum error = glGetError())
-    {
-        return false;
-        std::cout << "[OpenGL Error] (" << error << "):" << 
-            function << " " << file << ":" << line << std::endl;
-    }
-    return true;
-}
+#include "Renderer.h"
 
 struct ShaderProgramSource
 {
@@ -158,6 +139,10 @@ int main(void)
 	if (!glfwInit())
 		return -1;
 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(640, 480, "Hello World.", NULL, NULL);
 	if (!window)
@@ -187,16 +172,20 @@ int main(void)
 		0.5f, 0.5f,   // 2
         -0.5f, 0.5f   // 3
         };
-    
+
     uint indices[] = {
         0, 1, 2,
         2, 3, 0
     };
 
+	uint vao;
+	GLCall(glGenVertexArrays(1, &vao));
+	GLCall(glBindVertexArray(vao));
+
 	/* Define Vertex buffer - aka nodes */
-	uint hBuffer;					        // vertex buffer ID
-	GLCall(glGenBuffers(1, &hBuffer));				// Generate vertex buffer ID
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, hBuffer)); // Assign buffer type Array
+	uint buffer;					        // vertex buffer ID
+	GLCall(glGenBuffers(1, &buffer));				// Generate vertex buffer ID
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // Assign buffer type Array
 	GLCall(glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW));
 	// glBufferData(type, size in bytes, data, hint)
     GLCall(glEnableVertexAttribArray(0)); // 0 is the index
@@ -219,6 +208,12 @@ int main(void)
     ASSERT(location != -1);
     GLCall(glUniform4f(location, 0.2f, 0.3f, 0.8f, 1.0f));
 
+	/* Unbind all */
+	GLCall(glUseProgram(0));
+	GLCall(glBindVertexArray(0));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
     float r = 0.0f;
     float increment = 0.05f;
     /* Loop until the user closes the window */
@@ -227,8 +222,13 @@ int main(void)
 		/* Render here */
 		GLCall(glClear(GL_COLOR_BUFFER_BIT)); // Clear before drawing
 
-        // glDrawArrays(GL_TRIANGLES, 0, 3); // Start from 0th vertex, 3 is number of vertices
+		/* Rebind vao and ibo - no need to rebind buffer */
+		GLCall(glUseProgram(shader));
         GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
+		GLCall(glBindVertexArray(vao));
+		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
+        // glDrawArrays(GL_TRIANGLES, 0, 3); // Start from 0th vertex, 3 is number of vertices
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); // 6 is number of indices
 
 		/* Swap front and back buffers */
@@ -236,7 +236,7 @@ int main(void)
             increment = -0.05f;
         else if (r < 0.0f)
             increment = 0.05f;
-        
+
         r += increment;
 		glfwSwapBuffers(window);
 
