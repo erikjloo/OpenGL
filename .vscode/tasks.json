@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MESA",
+            "type": "shell",
+            "command": "export MESA GL_VERSION_OVERRIDE=3.3"
+        }
+    ]
+}
