@@ -178,6 +178,7 @@ int main(void)
         2, 3, 0
     };
 
+	/* Define Vertex array */
 	uint vao;
 	GLCall(glGenVertexArrays(1, &vao));
 	GLCall(glBindVertexArray(vao));

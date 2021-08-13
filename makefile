@@ -7,6 +7,6 @@ CFLAGS = -std=gnu++17 -Wall -g -O0
 
 main: main.cpp
 	export MESA_GL_VERSION_OVERRIDE=3.3
-	${CPP} ${CFLAGS} -o app main.cpp Renderer.cpp VertexBuffer.cpp IndexBuffer.cpp -lglfw -lGL -lGLEW
+	${CPP} ${CFLAGS} -o app main.cpp Renderer.cpp VertexBufferLayout.cpp Shader.cpp -lglfw -lGL -lGLEW
 
 # renderer.o: Renderer.h
