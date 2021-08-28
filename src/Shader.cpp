@@ -1,8 +1,8 @@
 #include "Shader.h"
 
-#include <iostream>
-#include <fstream> // file reader
-#include <sstream> // string stream
+// ============================================================================
+// Implementation
+// ============================================================================
 
 Shader::Shader(const std::string &filepath) : m_Filepath(filepath), m_RendererID(0)
 {
@@ -93,6 +93,11 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string &source)
         return 0;
     }
     return id;
+}
+
+void Shader::SetUniform1i(const std::string &name, int v0)
+{
+    GLCall(glUniform1i(GetUniformLocation(name), v0));
 }
 
 void Shader::SetUniform1f(const std::string &name, float v0)

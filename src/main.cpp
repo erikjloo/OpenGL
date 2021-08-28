@@ -30,15 +30,12 @@
 
 #include <GL/glew.h> // glew needs to be imported BEFORE glfw3!!
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream> // file reader
-#include <string>
-#include <sstream> // string stream
 
 #include "Renderer.h"
+#include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "VertexArray.h"
+#include "Texture.h"
 #include "Shader.h"
 
 int main(void)
@@ -76,26 +73,31 @@ int main(void)
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 	{
-		/* Define vertex positions */
+		/* Define vertex positions (and texture coords) */
 		float positions[] = {
-			-0.5f, -0.5f, // 0
-			0.5f, -0.5f,  // 1
-			0.5f, 0.5f,	  // 2
-			-0.5f, 0.5f	  // 3
+			-0.5f, -0.5f, 0.0f, 0.0f, // 0
+			0.5f, -0.5f, 1.0f, 0.0f,  // 1
+			0.5f, 0.5f, 1.0f, 1.0f,	  // 2
+			-0.5f, 0.5f, 0.0f, 1.0f  // 3
 		};
 
 		uint indices[] = {
 			0, 1, 2,
 			2, 3, 0};
 
+		/* Show alpha channels correctly */
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
 		/* Define vertex array (abstracts glGenVertexArrays, glBindVertexArrays) */
 		VertexArray va;
 
 		/* Define vertices (abstracts glGenBuffer, glBindBuffer, glBufferData) */
-		VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+		VertexBuffer vb(positions, 4 * 4 * sizeof(float));
 
 		/* Define buffer layout (abstracts glEnableVertexAttribArray, glVertexAttribPointer) */
 		VertexBufferLayout layout;
+		layout.Push<float>(2);
 		layout.Push<float>(2);
 		va.AddBuffer(vb, layout);
 
@@ -103,32 +105,35 @@ int main(void)
 		IndexBuffer ib(indices, 6);
 
 		/* Create shader */
-		Shader shader{"../res/shaders/Basic.shader"};
+		Shader shader{"res/shaders/Basic.shader"};
 		shader.Bind();
 		shader.SetUniform4f("u_Color", 0.2f, 0.3f, 0.8f, 1.0f);
+
+		/* Load texture */
+		Texture texture{"res/textures/icon.png"};
+		texture.Bind();
+		shader.SetUniform1i("u_Texture", 0);
 
 		/* Unbind all */
 		va.Unbind();
 		vb.Unbind();
 		ib.Unbind();
 		shader.Unbind();
-
+		Renderer renderer;
 		float r = 0.0f;
 		float increment = 0.05f;
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			GLCall(glClear(GL_COLOR_BUFFER_BIT)); // Clear before drawing
+			renderer.Clear();
 
 			/* Rebind vertex array, index buffer, and shader - no need to rebind vertex buffer */
-			va.Bind();
-			ib.Bind();
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.8f, 1.0f);
 
-			// glDrawArrays(GL_TRIANGLES, 0, 3); // Start from 0th vertex, 3 is number of vertices
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr)); // 6 is number of indices
+			/* Bind and draw */
+			renderer.Draw(va, ib, shader);
 
 			/* Swap front and back buffers */
 			if (r > 1.0f)

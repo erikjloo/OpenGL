@@ -1,5 +1,9 @@
 #include "VertexBufferLayout.h"
 
+// ============================================================================
+// Implementation
+// ============================================================================
+
 template <>
 void VertexBufferLayout::Push<float>(unsigned int count)
 {

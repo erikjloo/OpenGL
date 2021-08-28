@@ -1,9 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <GL/glew.h>
-
-#include "Renderer.h"
+#include "Util.h"
 
 // ============================================================================
 // Class definitions
@@ -11,10 +9,10 @@
 
 struct VertexBufferElement
 {
-    unsigned int type;
-    unsigned int count;
+    uint type;
+    uint count;
     unsigned char normalized;
-    static unsigned int GetSizeOfType(unsigned int type)
+    static uint GetSizeOfType(uint type)
     {
         switch (type)
         {
@@ -34,14 +32,14 @@ class VertexBufferLayout
 {
 private:
     std::vector<VertexBufferElement> m_Elements;
-    unsigned int m_Stride;
+    uint m_Stride;
 
 public:
     VertexBufferLayout() : m_Stride(0){};
     ~VertexBufferLayout() {};
 
     template <typename T>
-    void Push(unsigned int count); //{ static_assert(false); }
+    void Push(uint count); //{ static_assert(false); }
     inline const std::vector<VertexBufferElement> &GetElements() const { return m_Elements; };
-    inline unsigned int GetStride() const { return m_Stride; }
+    inline uint GetStride() const { return m_Stride; }
 };

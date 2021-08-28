@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer.h"
+#include "Util.h"
 
 // ============================================================================
 // Class definition
@@ -9,10 +9,10 @@
 class VertexBuffer
 {
 private:
-    unsigned int m_RendererID;
+    uint m_RendererID;
 
 public:
-    VertexBuffer(const void *data, unsigned int size);
+    VertexBuffer(const void *data, uint size);
     ~VertexBuffer() { GLCall(glDeleteBuffers(1, &m_RendererID)); }
 
     void Bind() const { GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)); }
@@ -23,7 +23,7 @@ public:
 // Implementation
 // ============================================================================
 
-VertexBuffer::VertexBuffer(const void *data, unsigned int size)
+VertexBuffer::VertexBuffer(const void *data, uint size)
 {
     GLCall(glGenBuffers(1, &m_RendererID));              // Generate vertex buffer ID
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_RendererID)); // Assign buffer type Array

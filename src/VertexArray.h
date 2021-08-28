@@ -2,7 +2,6 @@
 
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
-#include "Renderer.h"
 
 // ============================================================================
 // Class definition
@@ -11,7 +10,7 @@
 class VertexArray
 {
 private:
-    unsigned int m_RendererID;
+    uint m_RendererID;
 
 public:
     VertexArray() { GLCall(glGenVertexArrays(1, &m_RendererID)); }
@@ -30,11 +29,11 @@ void VertexArray::AddBuffer(const VertexBuffer &vb, const VertexBufferLayout &la
 {
     Bind();
     vb.Bind();
-    const auto &elements = layout.GetElements();
+    const std::vector<VertexBufferElement> &elements = layout.GetElements();
     intptr_t offset = 0;
-    for (unsigned int i = 0; i < elements.size(); ++i)
+    for (uint i = 0; i < elements.size(); ++i)
     {
-        const auto &element = elements[i];
+        const VertexBufferElement &element = elements[i];
         GLCall(glEnableVertexAttribArray(i)); // 0 is the index
         GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (const void *)offset));
         offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
