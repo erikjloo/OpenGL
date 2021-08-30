@@ -6,7 +6,7 @@ CPPFLAGS = -std=gnu++17 -Wall -g -O0
 # compiler flags:
 #  -g     - this flag adds debugging information to the executable file
 #  -Wall  - this flag is used to turn on most compiler warnings
+# export MESA_GL_VERSION_OVERRIDE=3.3
 
 main: src/main.cpp
-	export MESA_GL_VERSION_OVERRIDE=3.3
 	${CPP} ${CPPFLAGS} $(SRC_FILES) $(IMGUI_FILES) -o app -lglfw -lGL -lGLEW -ldl

@@ -15,11 +15,11 @@ class Texture
 private:
     uint m_RendererID;
     std::string m_FilePath;
-    unsigned char* m_LocalBuffer;
+    unsigned char *m_LocalBuffer;
     int m_Width, m_Height, m_BPP;
 
 public:
-    Texture(const std::string& path);
+    Texture(const std::string &path);
     ~Texture() { GLCall(glDeleteTextures(1, &m_RendererID)); };
 
     void Bind(uint slot = 0) const;
@@ -33,8 +33,8 @@ public:
 // Implementation
 // ============================================================================
 
-Texture::Texture(const std::string &path) : m_RendererID(0), m_FilePath(path), 
-    m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0)
+Texture::Texture(const std::string &path) : m_RendererID(0), m_FilePath(path),
+                                            m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0)
 {
     // Flip image vertically (OpenGL y-axis goes from bottom to top)
     stbi_set_flip_vertically_on_load(1);
