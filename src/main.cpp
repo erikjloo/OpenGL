@@ -30,42 +30,45 @@
 
 #include <GL/glew.h> // glew needs to be imported BEFORE glfw3!!
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <stdio.h>
+
+#include "vendor/imgui/imgui.h"
+#include "vendor/imgui/imgui_impl_glfw.h"
+#include "vendor/imgui/imgui_impl_opengl3.h"
 
 #include "Renderer.h"
-#include "VertexArray.h"
-#include "VertexBuffer.h"
+#include "VertexArray.h" // includes VertexBuffer and VertexBufferLayout
 #include "IndexBuffer.h"
 #include "Texture.h"
 #include "Shader.h"
 
+
 int main(void)
 {
-	GLFWwindow *window;
-
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
 
+	const char *glsl_version = "#version 130";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World.", NULL, NULL);
+	/* Create a window and OpenGL context */
+	GLFWwindow *window = glfwCreateWindow(960, 540, "Hello World.", NULL, NULL);
 	if (!window)
 	{
-		std::cout << "Failed to create window." << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 
-	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(1); // Enable vsync
 
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Failed to initialize GLEW." << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -75,10 +78,10 @@ int main(void)
 	{
 		/* Define vertex positions (and texture coords) */
 		float positions[] = {
-			-0.5f, -0.5f, 0.0f, 0.0f, // 0
-			0.5f, -0.5f, 1.0f, 0.0f,  // 1
-			0.5f, 0.5f, 1.0f, 1.0f,	  // 2
-			-0.5f, 0.5f, 0.0f, 1.0f  // 3
+			100.0f, 100.0f, 0.0f, 0.0f, // 0
+			200.0f, 100.0f, 1.0f, 0.0f,  // 1
+			200.0f, 200.0f, 1.0f, 1.0f,	  // 2
+			100.0f, 200.0f, 0.0f, 1.0f  // 3
 		};
 
 		uint indices[] = {
@@ -104,10 +107,22 @@ int main(void)
 		/* Define elements (abstracts glGenBuffer, glBindBuffer, glBufferData) */
 		IndexBuffer ib(indices, 6);
 
+		/* MVP matrix = Model matrix * view matrix * projection matrix */
+		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+		/* Create identity matrix and translate it by 100 to the left */
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+
+		glm::mat4 mvp = proj * view * model;
+		// glm::vec4 vp{100.0f, 100.0f, 0.0f, 1.0f};
+
+		// glm::vec4 result = proj * vp;
+
 		/* Create shader */
 		Shader shader{"res/shaders/Basic.shader"};
 		shader.Bind();
 		shader.SetUniform4f("u_Color", 0.2f, 0.3f, 0.8f, 1.0f);
+		shader.SetUniformMat4f("u_MVP", mvp);
 
 		/* Load texture */
 		Texture texture{"res/textures/icon.png"};
@@ -120,6 +135,12 @@ int main(void)
 		ib.Unbind();
 		shader.Unbind();
 		Renderer renderer;
+
+		ImGui::CreateContext();
+		// Setup Platform/Renderer backends
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init(glsl_version);
+
 		float r = 0.0f;
 		float increment = 0.05f;
 		/* Loop until the user closes the window */
@@ -142,6 +163,8 @@ int main(void)
 				increment = 0.05f;
 
 			r += increment;
+
+			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
 
 			/* Poll for and process events */
