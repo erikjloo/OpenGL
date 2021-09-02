@@ -1,7 +1,8 @@
 #pragma once
 #include "Test.h"
-#include "Util.h"
-#include "vendor/imgui/imgui.h"
+#include "../Util.h"
+#include "../vendor/imgui/imgui.h"
+
 namespace test
 {
 
@@ -14,7 +15,7 @@ namespace test
     public:
         TestClearColor() : Test(), m_ClearColor{0.2f, 0.3f, 0.8f, 1.0f} {}
         ~TestClearColor() {}
-        void OnUpdate(float deltaTime) override{};
+        void OnUpdate(float deltaTime) override {}
         void OnRender() override;
         void OnImGuiRender() override;
 
