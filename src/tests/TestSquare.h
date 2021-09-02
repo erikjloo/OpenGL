@@ -1,7 +1,12 @@
 #pragma once
 #include "Test.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../Util.h"
-#include "../vendor/imgui/imgui.h"
+#include "../Renderer.h"
+#include "../Texture.h"
 
 namespace test
 {
@@ -24,11 +29,9 @@ namespace test
         uint indices[6];
         VertexArray va;
         VertexBuffer vb;           // vertices
-        VertexBufferLayout layout; // structure of each vertex
         IndexBuffer ib;            // elements
         Shader shader{"res/shaders/Basic.shader"};
         Texture texture{"res/textures/icon.png"};
-        Renderer renderer;
 
         glm::mat4 proj;
         glm::mat4 view;
@@ -46,21 +49,21 @@ namespace test
                                    50.0f, 50.0f, 1.0f, 1.0f,   // 2
                                    -50.0f, 50.0f, 0.0f, 1.0f   // 3
                                },
-                               indices{0, 1, 2, 2, 3, 0}, vb{positions, 4 * 4 * sizeof(float)}, ib{indices, 6}
+                               indices{0, 1, 2, 2, 3, 0},                                 //
+                               vb{positions, 4 * 4 * sizeof(float)},                      //
+                               ib{indices, 6},                                            //
+                               proj(glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f)), //
+                               view(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)))
     {
         /* Show alpha channels correctly */
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        /* Define buffer layout (abstracts glEnableVertexAttribArray, glVertexAttribPointer) */
+        /* Define vertices */
+        VertexBufferLayout layout; // structure of each vertex
         layout.Push<float>(2);
         layout.Push<float>(2);
         va.AddBuffer(vb, layout);
-
-        /* MVP matrix = Model matrix * view matrix * projection matrix */
-        proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-        /* Create identity matrix and translate it by 100 to the left */
-        view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
         /* Bind texture */
         shader.Bind();
@@ -69,9 +72,10 @@ namespace test
     }
     void TestSquare::OnRender()
     {
-        /* Rebind vertex array, index buffer, and shader - no need to rebind vertex buffer */
-        shader.Bind();
+        Renderer renderer;
         renderer.Clear();
+
+        shader.Bind();
 
         /* Bind and draw */
         {

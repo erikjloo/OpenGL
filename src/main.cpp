@@ -39,14 +39,12 @@
 #include "vendor/imgui/imgui_impl_opengl3.h"
 
 #include "Renderer.h"
-#include "VertexArray.h" // includes VertexBuffer and VertexBufferLayout
-#include "IndexBuffer.h"
 #include "Texture.h"
-#include "Shader.h"
 
 #include "tests/Test.h"
 #include "tests/TestClearColor.h"
 #include "tests/TestSquare.h"
+#include "tests/TestTexture2D.h"
 
 int main(void)
 {
@@ -94,9 +92,9 @@ int main(void)
 		test::TestMenu* testMenu = new test::TestMenu(currentTest);
 		currentTest = testMenu;
 
-
 		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
 		testMenu->RegisterTest<test::TestSquare>("Square");
+		testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -121,10 +119,10 @@ int main(void)
 					currentTest = testMenu;
 				}
 				currentTest->OnImGuiRender();
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 				ImGui::End();
 			}
 			
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::Render();
 
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -135,14 +133,20 @@ int main(void)
 			/* Poll for and process events */
 			glfwPollEvents();
 		}
+
+		/* Cleanup */
 		delete currentTest;
 		if (currentTest != testMenu)
 			delete testMenu;
 		currentTest = nullptr;
 	}
 
+	/* Cleanup */
+	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
 }
